@@ -1,0 +1,42 @@
+all: psgesv ex1_f ex1_c pdpttr_2c pdpttr_2f  lin_f lin_c
+
+#There is a bug in the Intel 10 compiler that
+#prevents psgesv.f90 from working correctly at
+#optimization greater than -O1
+OPT=-O1 -DDEBUG
+OPT=-O1
+
+INCPATH=$(MKLROOT)/include
+LIBS=-mkl -lmkl_blacs_intelmpi_lp64 -lmkl_scalapack_lp64
+
+#surpress warning: feupdateenv is not implemented and will always fail
+SUPPRESS=-i_dynamic
+
+
+psgesv:psgesv.f90 Makefile
+	mpif90 $(OPT) -o psgesv psgesv.f90 $(LIBS)
+        
+ex1_f:ex1.f90 Makefile
+	mpif90 $(OPT) -o ex1_f ex1.f90 $(LIBS)
+
+pdpttr_2c:pdpttr_2.c Makefile
+	mpicc $(OPT) -o pdpttr_2c -I$(INCPATH) pdpttr_2.c $(LIBS)
+
+ex1_c:ex1.c Makefile
+	mpicc $(OPT) -o ex1_c -I$(INCPATH) ex1.c $(LIBS)
+
+pdpttr_2f:pdpttr_2.f90 Makefile
+	mpif90 $(OPT) -o pdpttr_2f pdpttr_2.f90 $(LIBS)
+
+lin_f:linsolve.f90 Makefile
+	mpif90 $(OPT) -o lin_f linsolve.f90 $(LIBS)
+
+lin_c:linsolve.c linsolve.h Makefile
+	mpicc $(OPT) -o lin_c -I$(INCPATH) linsolve.c $(LIBS)
+
+clean:
+	rm -rf *o ex1_c ex1_f lin_c lin_f pdpttr_2c pdpttr_2f psgesv
+
+tar:
+	tar -czf  example.tgz  casestudy  ex1.c  ex1.f90  in.16  in.dat  index.html  linsolve.c  linsolve.f90  linsolve.h  Makefile  make.old  pbsfile  pdpttr_2.c  pdpttr_2.f90  psgesv.f90  rcs09  Readme  slurm_script
+
